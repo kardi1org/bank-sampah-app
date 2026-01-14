@@ -55,19 +55,45 @@
 
         <div
             style="margin-bottom: 30px; padding: 20px; background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 15px;">
-            <label
-                style="display: block; font-weight: 900; color: #1e293b; font-size: 11px; text-transform: uppercase; margin-bottom: 15px;">👥
-                Petugas Bertugas:</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
-                @foreach ($allOfficers as $off)
-                    <label
-                        style="padding: 10px; border: 2px solid {{ in_array($off->id, $selectedOfficers) ? '#4338ca' : '#d1d5db' }}; border-radius: 10px; display: flex; align-items: center; cursor: pointer; color: black; font-weight: bold; font-size: 12px; background: {{ in_array($off->id, $selectedOfficers) ? '#e0e7ff' : 'white' }};">
-                        <input type="checkbox" wire:model.live="selectedOfficers" value="{{ $off->id }}"
-                            style="margin-right: 8px;">
-                        {{ $off->name }}
-                    </label>
-                @endforeach
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <label style="font-weight: 900; color: #1e293b; font-size: 11px; text-transform: uppercase;">👥 Petugas
+                    Bertugas:</label>
+
+                @if (!$showAllOfficers && count($selectedOfficers) > 0)
+                    <button wire:click="gantiPetugas"
+                        style="background: none; border: none; color: #4338ca; font-size: 11px; font-weight: bold; cursor: pointer; text-decoration: underline;">
+                        GANTI PETUGAS
+                    </button>
+                @endif
             </div>
+
+            @if ($showAllOfficers || count($selectedOfficers) == 0)
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;">
+                    @foreach ($allOfficers as $off)
+                        <label
+                            style="padding: 10px; border: 2px solid {{ in_array($off->id, $selectedOfficers) ? '#4338ca' : '#d1d5db' }}; border-radius: 10px; display: flex; align-items: center; cursor: pointer; color: black; font-weight: bold; font-size: 12px; background: {{ in_array($off->id, $selectedOfficers) ? '#e0e7ff' : 'white' }};">
+                            <input type="checkbox" wire:model.live="selectedOfficers" value="{{ $off->id }}"
+                                style="margin-right: 8px;">
+                            {{ $off->name }}
+                        </label>
+                    @endforeach
+                </div>
+                @error('selectedOfficers')
+                    <span style="color: #ef4444; font-size: 11px; font-weight: bold; margin-top: 5px; display: block;">⚠️
+                        Pilih minimal 1 petugas</span>
+                @enderror
+            @else
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    @foreach ($allOfficers as $off)
+                        @if (in_array($off->id, $selectedOfficers))
+                            <div
+                                style="padding: 8px 15px; background: #4338ca; color: white; border-radius: 20px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                                ✅ {{ $off->name }}
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         @if (count($selectedOfficers) > 0)

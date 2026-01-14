@@ -17,11 +17,22 @@ class InputSetoran extends Component
     public $listSampah = []; // Menampung input dinamis
     public $selectedOfficers = []; // Menampung ID petugas (max 3)
     public $searchCategory = [];
+    public $showAllOfficers = false;
 
     public function mount()
     {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
         // Ambil semua kategori sekali saja saat halaman dibuka
         $this->searchCategory = [];
+        $this->showAllOfficers = true;
+    }
+
+    public function gantiPetugas()
+    {
+        $this->showAllOfficers = true;
+        // Opsional: $this->selectedOfficers = []; // Hapus pilihan lama jika ingin benar-benar reset
     }
 
     public function selectCategory($index, $categoryId, $categoryName)
@@ -126,7 +137,12 @@ class InputSetoran extends Component
             }
         });
 
+        // RESET SEMUA KECUALI selectedOfficers
         $this->reset(['nasabahId', 'namaNasabah', 'searchNasabah', 'listSampah', 'searchCategory']);
+
+        // Sembunyikan daftar semua petugas setelah simpan (kunci pilihan saat ini)
+        $this->showAllOfficers = false;
+
         session()->flash('message', 'Setoran berhasil dicatat!');
     }
 
@@ -134,6 +150,15 @@ class InputSetoran extends Component
 
     public function render()
     {
+        // Ambil semua user yang berhak setor (nasabah, petugas, admin)
+        $nasabahs = User::where(function ($query) {
+            $query->where('role', 'nasabah')
+                ->orWhere('role', 'petugas')
+                ->orWhere('role', 'admin');
+        })
+            ->where('name', 'like', '%' . $this->searchNasabah . '%')
+            ->take(5) // Batasi agar tidak terlalu panjang saat mengetik
+            ->get();
         // Ambil transaksi hari ini
         $todayTransactions = Transaction::with(['user', 'details.category', 'incentives.officer'])
             ->whereDate('created_at', now())->latest()->get();
@@ -152,11 +177,11 @@ class InputSetoran extends Component
         }
 
         return view('livewire.petugas.input-setoran', [
-            'nasabahs' => User::where('role', 'nasabah')
-                ->where('name', 'like', '%' . $this->searchNasabah . '%')->get(),
+            'nasabahs' => $nasabahs,
+            'categories' => Category::where('type', 'pilah')->get(),
             'allOfficers' => User::where('role', 'petugas')->get(),
             'todayTransactions' => $todayTransactions,
-            'categoryResults' => $categoryResults // Kirim hasil cari kategori ke blade
+            'categoryResults' => $categoryResults ?? []
         ]);
     }
 
