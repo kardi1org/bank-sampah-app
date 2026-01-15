@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,8 +40,9 @@ Route::middleware(['auth'])->group(function () {
             case 'petugas':
                 return redirect()->route('petugas.dashboard');
             case 'nasabah':
-            default:
                 return redirect()->route('nasabah.dashboard');
+            default:
+                return redirect()->route('login');
         }
     })->name('dashboard');
 
@@ -85,18 +87,19 @@ Route::middleware(['auth'])->group(function () {
     // ========== RUTE KHUSUS PETUGAS ==========
     Route::middleware(['role:petugas'])->prefix('petugas')->name('petugas.')->group(function () {
         // Dashboard Petugas
-        Route::get('/dashboard', function () {
-            return view('petugas.dashboard');
-        })->name('dashboard');
-
+        // Route::get('/dashboard', function () {
+        //     return view('petugas.dashboard');
+        // })->name('dashboard');
+        Route::get('/dashboard', [PetugasController::class, 'index'])->name('dashboard');
         // Input Setoran (Livewire Component)
         Route::get('/input-setoran', function () {
             return view('petugas.input-setoran'); // Wrapper untuk Livewire
         })->name('input-setoran');
 
         // Riwayat Hari Ini
-        Route::get('/riwayat-hari-ini', function () {
-            return view('petugas.riwayat-hari-ini');
+        // Pastikan route riwayat menerima parameter user_id secara opsional {user_id?}
+        Route::get('/riwayat-hari-ini/{user_id?}', function ($user_id = null) {
+            return view('petugas.riwayat-hari-ini', ['user_id' => $user_id]);
         })->name('riwayat-hari-ini');
 
         // Data Nasabah (View khusus petugas)

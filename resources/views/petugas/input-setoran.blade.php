@@ -1,6 +1,6 @@
 <x-app-layout>
-    <div class="flex flex-col lg:flex-row gap-6">
-        <div class="lg:w-1/2">
+    <div class="flex flex-col gap-6">
+        <div class="w-full">
             <livewire:petugas.input-setoran />
         </div>
     </div>

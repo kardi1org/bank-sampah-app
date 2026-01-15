@@ -28,7 +28,7 @@
         }
     </style>
 
-    <div style="background: #4338ca; padding: 20px; text-align: center; border-radius: 18px 18px 0 0;">
+    <div style="background: #4338ca; padding: 8px; text-align: center; border-radius: 18px 18px 0 0;">
         <h2 style="color: white; margin: 0; font-size: 20px; font-weight: bold;">Input Setoran Timbangan</h2>
     </div>
 
@@ -157,73 +157,155 @@
                         </div>
                         @foreach ($listSampah as $index => $item)
                             <div wire:key="baris-{{ $index }}"
-                                style="display: flex; align-items: flex-start; background: #f9fafb; padding: 15px; border-radius: 15px; border: 1px solid #e5e7eb; margin-bottom: 10px; gap: 10px; position: relative; z-index: {{ 100 - $index }};">
+                                style="background: #f8fafc; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; margin-bottom: 12px; position: relative; z-index: {{ 100 - $index }};">
 
-                                <div style="flex-grow: 1; position: relative;" x-data="{ searchTerm: @entangle('searchCategory.' . $index) }">
+                                <style>
+                                    .input-wrapper {
+                                        display: flex;
+                                        gap: 12px;
+                                        align-items: center;
+                                        /* Sejajar secara vertikal */
+                                    }
 
-                                    @if (!$item['is_gabrukan'])
-                                        <input type="text" x-model="searchTerm"
-                                            wire:model.live.debounce.300ms="searchCategory.{{ $index }}"
-                                            placeholder="Ketik nama kategori..." {{-- Perubahan Warna Border Jika Error --}}
-                                            style="width: 100%; padding: 10px; border-radius: 8px; font-weight: bold; color: black;
-                                             border: 2px solid @error('listSampah.' . $index . '.category_id') #ef4444 @else {{ $item['category_id'] ? '#4338ca' : '#ccc' }} @enderror;
-                                             background: {{ $item['category_id'] ? '#f0f4ff' : 'white' }};"
-                                            {{ $item['category_id'] ? 'readonly' : '' }}>
+                                    .cat-box {
+                                        flex-grow: 1;
+                                        /* Di web: Kategori akan lebar mengikuti sisa ruang */
+                                        position: relative;
+                                    }
 
-                                        {{-- Pesan Error di bawah Jenis Sampah --}}
-                                        @error('listSampah.' . $index . '.category_id')
-                                            <span
-                                                style="color: #ef4444; font-size: 10px; font-weight: bold; margin-top: 4px; display: block;">
-                                                ⚠️ Jenis sampah wajib dipilih
-                                            </span>
-                                        @enderror
+                                    .kg-box {
+                                        flex: 0 0 130px;
+                                        /* Lebar tetap untuk KG agar tidak terlalu lebar */
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 5px;
+                                    }
 
-                                        @if (isset($categoryResults[$index]) && $categoryResults[$index]->count() > 0 && !$item['category_id'])
+                                    .action-box {
+                                        flex: 0 0 40px;
+                                        display: flex;
+                                        justify-content: flex-end;
+                                    }
+
+                                    .input-field {
+                                        width: 100%;
+                                        padding: 10px;
+                                        border-radius: 8px;
+                                        font-weight: bold;
+                                        color: black;
+                                        box-sizing: border-box;
+                                        font-size: 14px;
+                                    }
+
+                                    /* Tampilan Mobile */
+                                    @media (max-width: 640px) {
+                                        .input-wrapper {
+                                            flex-wrap: wrap;
+                                            gap: 8px;
+                                        }
+
+                                        .cat-box {
+                                            flex: 0 0 100%;
+                                            /* Baris penuh untuk kategori */
+                                        }
+
+                                        .kg-box {
+                                            flex: 1;
+                                            /* KG ambil sisa ruang di kiri tombol trash */
+                                            justify-content: flex-start;
+                                        }
+
+                                        .action-box {
+                                            flex: 0 0 45px;
+                                        }
+                                    }
+                                </style>
+
+                                <div class="input-wrapper">
+                                    <div class="cat-box" x-data="{ searchTerm: @entangle('searchCategory.' . $index) }">
+                                        @if (!$item['is_gabrukan'])
+                                            <input type="text" x-model="searchTerm"
+                                                wire:model.live.debounce.300ms="searchCategory.{{ $index }}"
+                                                placeholder="Pilih Kategori Sampah..." class="input-field"
+                                                style="border: 2px solid @error('listSampah.' . $index . '.category_id') #ef4444 @else {{ $item['category_id'] ? '#4338ca' : '#cbd5e1' }} @enderror;
+                                               background: {{ $item['category_id'] ? '#f0f4ff' : 'white' }};"
+                                                {{ $item['category_id'] ? 'readonly' : '' }}>
+
+                                            @if (isset($categoryResults[$index]) && $categoryResults[$index]->count() > 0 && !$item['category_id'])
+                                                <div
+                                                    style="position: absolute; width: 100%; background: white; border: 2px solid #4338ca; border-radius: 8px; margin-top: 5px; max-height: 180px; overflow-y: auto; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 9999;">
+                                                    @foreach ($categoryResults[$index] as $cat)
+                                                        <div wire:click="selectCategory({{ $index }}, {{ $cat->id }}, '{{ $cat->name }}')"
+                                                            @click="searchTerm = '{{ $cat->name }}'"
+                                                            style="padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; color: black; font-weight: bold; font-size: 13px;"
+                                                            onmouseover="this.style.backgroundColor='#e0e7ff'"
+                                                            onmouseout="this.style.backgroundColor='white'">
+                                                            📦 {{ $cat->name }}
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        @else
                                             <div
-                                                style="position: absolute; width: 100%; background: white; border: 1px solid #4338ca; border-radius: 8px; margin-top: 5px; max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px rgba(0,0,0,0.2); z-index: 9999;">
-                                                @foreach ($categoryResults[$index] as $cat)
-                                                    <div wire:click="selectCategory({{ $index }}, {{ $cat->id }}, '{{ $cat->name }}')"
-                                                        @click="searchTerm = '{{ $cat->name }}'"
-                                                        style="padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; color: black; font-weight: bold;"
-                                                        onmouseover="this.style.backgroundColor='#e0e7ff'"
-                                                        onmouseout="this.style.backgroundColor='white'">
-                                                        🔍 {{ $cat->name }}
-                                                    </div>
-                                                @endforeach
+                                                style="color: #d97706; font-weight: 800; font-size: 13px; padding: 10px; background: #fffbeb; border: 2px solid #fcd34d; border-radius: 8px;">
+                                                🚚 GABRUKAN
                                             </div>
                                         @endif
-                                    @else
-                                        <div
-                                            style="color: #d97706; font-weight: bold; font-size: 13px; padding: 10px; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px;">
-                                            🚚 GABRUKAN
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                                    <div style="display: flex; align-items: center; gap: 5px;">
-                                        <input type="number" wire:model.live="listSampah.{{ $index }}.weight"
-                                            step="0.01"
-                                            style="width: 70px; padding: 10px; border: 2px solid @error('listSampah.' . $index . '.weight') #ef4444 @else #ccc @enderror; border-radius: 8px; text-align: center; color: black; font-weight: bold;"
-                                            placeholder="0">
-                                        <span style="font-weight: bold; color: black;">Kg</span>
-                                        <button wire:click="hapusBaris({{ $index }})"
-                                            style="color: #ef4444; background: none; border: none; font-size: 22px; cursor: pointer;">&times;</button>
                                     </div>
 
+                                    <div class="kg-box">
+                                        <input type="number" wire:model.live="listSampah.{{ $index }}.weight"
+                                            step="0.01" class="input-field"
+                                            style="border: 2px solid @error('listSampah.' . $index . '.weight') #ef4444 @else #cbd5e1 @enderror; text-align: center;"
+                                            placeholder="0">
+                                        <span style="font-weight: 900; color: #475569; font-size: 13px;">Kg</span>
+                                    </div>
+
+                                    <div class="action-box">
+                                        <button wire:click="hapusBaris({{ $index }})"
+                                            style="background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s;"
+                                            onmouseover="this.style.background='#fee2e2'"
+                                            onmouseout="this.style.background='#fef2f2'">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18" />
+                                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                <line x1="10" y1="11" x2="10" y2="17" />
+                                                <line x1="14" y1="11" x2="14" y2="17" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; gap: 15px; margin-top: 5px;">
+                                    @error('listSampah.' . $index . '.category_id')
+                                        <span style="color: #ef4444; font-size: 10px; font-weight: bold;">⚠️ Kategori
+                                            wajib</span>
+                                    @enderror
                                     @error('listSampah.' . $index . '.weight')
-                                        <span style="color: #ef4444; font-size: 10px; font-weight: bold; margin-top: 4px;">
-                                            ⚠️ Berat wajib isi > 0
-                                        </span>
+                                        <span style="color: #ef4444; font-size: 10px; font-weight: bold;">⚠️ Berat
+                                            wajib</span>
                                     @enderror
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <button wire:click="simpan"
-                        style="width: 100%; background: #16a34a; color: white; padding: 18px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 30px;">SIMPAN
-                        TRANSAKSI</button>
+                    <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                        <button wire:click="simpan"
+                            style="flex: 3; background: {{ $editingTransactionId ? '#2563eb' : '#16a34a' }}; color: white; padding: 18px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                            {{ $editingTransactionId ? '💾 UPDATE TRANSAKSI' : '✅ SIMPAN TRANSAKSI' }}
+                        </button>
+
+                        @if ($editingTransactionId)
+                            <button wire:click="batalEdit"
+                                style="flex: 1; background: #64748b; color: white; padding: 18px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                                ✖ BATAL
+                            </button>
+                        @endif
+                    </div>
                 @endif
             </div>
         @else
@@ -232,37 +314,171 @@
                 Pilih petugas di atas dahulu.</div>
         @endif
 
-        <div style="margin-top: 20px;">
-            <h3 style="margin-bottom: 15px; font-size: 15px; color: #1e293b; font-weight: bold;">Riwayat Hari Ini</h3>
-            <div class="history-table" style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                    <tr style="background: #f1f5f9; color: #64748b; text-align: left;">
-                        <th style="padding: 12px;">Waktu</th>
-                        <th style="padding: 12px;">Nasabah</th>
-                        <th style="padding: 12px;">Berat</th>
-                        <th style="padding: 12px;">Petugas</th>
-                    </tr>
-                    @forelse($todayTransactions as $trx)
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 12px;">{{ $trx->created_at->format('H:i') }}</td>
-                            <td style="padding: 12px; font-weight: bold; color: #4338ca;">{{ $trx->user->name }}</td>
-                            <td style="padding: 12px;">
-                                @foreach ($trx->details as $detail)
-                                    <span
-                                        style="background: #f1f5f9; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-bottom: 2px;">{{ $detail->category->name ?? 'Gab' }}:
-                                        {{ $detail->weight }}Kg</span>
-                                @endforeach
-                            </td>
-                            <td style="padding: 12px; font-size: 10px; color: #64748b;">
-                                {{ $trx->incentives->pluck('officer.name')->implode(', ') }}</td>
+        <div style="margin-top: 30px;">
+            <h3
+                style="margin-bottom: 15px; font-size: 16px; color: #1e293b; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                🕒 Riwayat Transaksi Hari Ini
+            </h3>
+
+            <style>
+                /* Sembunyikan salah satu berdasarkan ukuran layar */
+                .desktop-history {
+                    display: block;
+                }
+
+                .mobile-history {
+                    display: none;
+                }
+
+                @media (max-width: 768px) {
+                    .desktop-history {
+                        display: none;
+                    }
+
+                    .mobile-history {
+                        display: block;
+                    }
+                }
+
+                .card-history {
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 15px;
+                    padding: 15px;
+                    margin-bottom: 12px;
+                }
+
+                .btn-action {
+                    padding: 8px 12px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 12px;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+            </style>
+
+            <div class="desktop-history"
+                style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; background: white;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; color: #64748b; text-align: left;">
+                            <th style="padding: 12px;">Waktu</th>
+                            <th style="padding: 12px;">Nasabah</th>
+                            <th style="padding: 12px;">Detail Sampah</th>
+                            <th style="padding: 12px;">Petugas</th>
+                            <th style="padding: 12px;">Input Oleh</th>
+                            <th style="padding: 12px; text-align: center;">Aksi</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" style="padding: 20px; text-align: center; color: #94a3b8;">Belum ada
-                                transaksi hari ini.</td>
-                        </tr>
-                    @endforelse
+                    </thead>
+                    <tbody>
+                        @forelse($todayTransactions as $trx)
+                            <tr style="border-bottom: 1px solid #f1f5f9;" wire:key="trx-dt-{{ $trx->id }}">
+                                <td style="padding: 12px;">{{ $trx->created_at->format('H:i') }}</td>
+                                <td style="padding: 12px; font-weight: bold; color: #4338ca;">{{ $trx->user->name }}
+                                </td>
+                                <td style="padding: 12px;">
+                                    @foreach ($trx->details as $detail)
+                                        <span
+                                            style="background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block;">
+                                            {{ $detail->category->name ?? 'Gab' }}: {{ $detail->weight }}kg
+                                        </span>
+                                    @endforeach
+                                </td>
+                                <td style="padding: 12px; font-size: 11px; color: #64748b;">
+                                    {{ $trx->incentives->pluck('officer.name')->implode(', ') }}
+                                </td>
+                                <td style="padding: 12px; font-size: 11px;">
+                                    <div style="font-weight: bold; color: #1e293b;">
+                                        {{ $trx->creator->name ?? 'Sistem' }}</div>
+                                    @if ($trx->updated_by)
+                                        <div style="color: #ef4444; font-size: 9px; margin-top: 2px;">
+                                            ✎ Edt: {{ $trx->editor->name }}
+                                        </div>
+                                    @endif
+                                </td>
+                                <td style="padding: 12px; text-align: center;">
+                                    <div style="display: flex; gap: 8px; justify-content: center;">
+                                        <button wire:click="editTransaction({{ $trx->id }})"
+                                            style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer;">✏️</button>
+                                        <button
+                                            onclick="confirm('Yakin ingin menghapus transaksi ini?') || event.stopImmediatePropagation()"
+                                            wire:click="hapusTransaksi({{ $trx->id }})"
+                                            style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer;">🗑️</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" style="padding: 30px; text-align: center; color: #94a3b8;">Belum
+                                    ada transaksi hari ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
                 </table>
+            </div>
+
+            <div class="mobile-history">
+                @forelse($todayTransactions as $trx)
+                    <div class="card-history" wire:key="trx-mb-{{ $trx->id }}">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <div>
+                                <span
+                                    style="font-size: 10px; color: #64748b; font-weight: bold;">{{ $trx->created_at->format('H:i') }}
+                                    WIB</span>
+                                <div style="font-weight: 800; color: #4338ca; font-size: 15px;">{{ $trx->user->name }}
+                                </div>
+                            </div>
+                            <div style="text-align: right; font-size: 10px; color: #94a3b8;">
+                                ID: #{{ $trx->id }}
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 12px;">
+                            @foreach ($trx->details as $detail)
+                                <div
+                                    style="font-size: 12px; color: #1e293b; background: white; padding: 4px 10px; border-radius: 6px; margin-bottom: 4px; border: 1px solid #e2e8f0;">
+                                    <strong>{{ $detail->category->name ?? 'Gabrukan' }}</strong>:
+                                    {{ $detail->weight }} Kg
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div style="font-size: 11px; color: #64748b; margin-bottom: 15px;">
+                            👤 Petugas: {{ $trx->incentives->pluck('officer.name')->implode(', ') }}
+                        </div>
+
+                        <div
+                            style="font-size: 11px; color: #64748b; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+                            <span>✍️ Input: {{ $trx->creator->name ?? '-' }}</span>
+                            @if ($trx->updated_by)
+                                <span style="color: #ef4444; margin-left: 10px;">✎ Edt:
+                                    {{ $trx->editor->name }}</span>
+                            @endif
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <button wire:click="editTransaction({{ $trx->id }})" class="btn-action"
+                                style="background: #dbeafe; color: #1e40af; justify-content: center;">
+                                ✏️ Edit Data
+                            </button>
+                            <button onclick="confirm('Hapus transaksi ini?') || event.stopImmediatePropagation()"
+                                wire:click="hapusTransaksi({{ $trx->id }})" class="btn-action"
+                                style="background: #fee2e2; color: #991b1b; justify-content: center;">
+                                🗑️ Hapus
+                            </button>
+                        </div>
+                    </div>
+                @empty
+                    <div
+                        style="text-align: center; padding: 20px; color: #94a3b8; border: 2px dashed #e2e8f0; border-radius: 15px;">
+                        Belum ada transaksi hari ini.
+                    </div>
+                @endforelse
             </div>
         </div>
 

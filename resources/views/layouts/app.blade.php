@@ -570,8 +570,17 @@
             <!-- Menu Navigation Mobile -->
             <nav class="p-4 space-y-1">
                 <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}"
-                    class="menu-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <!-- Dashboard sesuai role -->
+                <a href="{{ Auth::user()->role == 'admin'
+                    ? route('admin.dashboard')
+                    : (Auth::user()->role == 'petugas'
+                        ? route('petugas.dashboard')
+                        : route('nasabah.dashboard')) }}"
+                    class="menu-item {{ request()->routeIs('admin.dashboard') ||
+                    request()->routeIs('petugas.dashboard') ||
+                    request()->routeIs('nasabah.dashboard')
+                        ? 'active'
+                        : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span class="sidebar-text">Dashboard</span>
                 </a>
@@ -848,7 +857,11 @@
             <!-- Main Content -->
             <main class="main-content">
                 <div class="content-container">
-                    {{ $slot }}
+                    @hasSection('content')
+                        @yield('content')
+                    @else
+                        {{ $slot ?? '' }}
+                    @endif
                 </div>
             </main>
         </div>

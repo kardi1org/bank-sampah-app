@@ -18,6 +18,7 @@ class InputSetoran extends Component
     public $selectedOfficers = []; // Menampung ID petugas (max 3)
     public $searchCategory = [];
     public $showAllOfficers = false;
+    public $editingTransactionId = null; // Tambahkan ini
 
     public function mount()
     {
@@ -88,65 +89,73 @@ class InputSetoran extends Component
     {
         $this->validate([
             'nasabahId' => 'required',
-            'selectedOfficers' => 'required|array|min:1|max:3',
+            'selectedOfficers' => 'required|array|min:1|max:3', // Pastikan petugas dipilih
             'listSampah' => 'required|array|min:1',
-
-            // Validasi Kategori: Wajib diisi jika is_gabrukan bernilai false
             'listSampah.*.category_id' => 'required_if:listSampah.*.is_gabrukan,false',
-
-            // Validasi Berat: Wajib angka dan lebih dari 0
             'listSampah.*.weight' => 'required|numeric|gt:0',
         ], [
             'nasabahId.required' => 'Pilih nasabah terlebih dahulu.',
+            'selectedOfficers.required' => 'Pilih minimal 1 petugas yang bertugas.',
             'listSampah.*.category_id.required_if' => 'Jenis sampah wajib dipilih.',
             'listSampah.*.weight.gt' => 'Berat harus lebih dari 0 kg.',
         ]);
 
         DB::transaction(function () {
-            $transaction = Transaction::create([
-                'user_id' => $this->nasabahId,
-                'status' => 'pending'
-            ]);
+            // 1. Logika Update atau Create Transaksi
+            if ($this->editingTransactionId) {
+                $transaction = Transaction::find($this->editingTransactionId);
+                $transaction->update([
+                    'user_id' => $this->nasabahId,
+                    'updated_by' => auth()->id(),
+                ]);
 
-            // Ambil ID kategori gabrukan sekali saja
+                // 2. BERSIHKAN DATA LAMA (PENTING)
+                // Hapus detail sampah dan daftar petugas lama sebelum menulis yang baru
+                $transaction->details()->delete();
+                $transaction->incentives()->delete();
+            } else {
+                $transaction = Transaction::create([
+                    'user_id' => $this->nasabahId,
+                    'created_by' => auth()->id(),
+                    'status' => 'pending'
+                ]);
+            }
+
             $gabrukanCategory = Category::where('type', 'gabrukan')->first();
 
+            // 3. SIMPAN DETAIL SAMPAH BARU
             foreach ($this->listSampah as $item) {
-                // Logika Perbaikan:
-                // Jika is_gabrukan true, gunakan ID dari $gabrukanCategory
-                // Jika tidak, gunakan category_id dari pilihan user
                 $finalCategoryId = $item['is_gabrukan']
                     ? ($gabrukanCategory->id ?? null)
                     : $item['category_id'];
 
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
-                    'category_id' => $finalCategoryId, // Sekarang tidak akan kosong lagi
+                    'category_id' => $finalCategoryId,
                     'weight' => $item['weight'],
                     'price_to_nasabah' => $item['is_gabrukan'] ? 500 : 0
                 ]);
             }
 
-            // Simpan Insentif Petugas...
+            // 4. SIMPAN PETUGAS BERTUGAS BARU (UPDATE TERHADAP PETUGAS)
             foreach ($this->selectedOfficers as $officerId) {
                 OfficerIncentive::create([
                     'transaction_id' => $transaction->id,
                     'officer_id' => $officerId,
-                    'amount' => 2000
+                    'amount' => 2000 // Nominal insentif per petugas
                 ]);
             }
         });
 
-        // RESET SEMUA KECUALI selectedOfficers
-        $this->reset(['nasabahId', 'namaNasabah', 'searchNasabah', 'listSampah', 'searchCategory']);
+        // Reset Form
+        $this->reset(['nasabahId', 'namaNasabah', 'searchNasabah', 'listSampah', 'searchCategory', 'editingTransactionId']);
 
-        // Sembunyikan daftar semua petugas setelah simpan (kunci pilihan saat ini)
+        // Opsional: Jika ingin petugas tetap terpilih setelah simpan, jangan reset selectedOfficers
+        // Tapi kita sembunyikan daftar pilihannya agar rapi
         $this->showAllOfficers = false;
 
-        session()->flash('message', 'Setoran berhasil dicatat!');
+        session()->flash('message', $this->editingTransactionId ? 'Transaksi & Petugas berhasil diperbarui!' : 'Setoran berhasil dicatat!');
     }
-
-    // Hapus 'public $nasabahs;' jika ada di atas.
 
     public function render()
     {
@@ -189,5 +198,62 @@ class InputSetoran extends Component
     {
         unset($this->listSampah[$index]);
         $this->listSampah = array_values($this->listSampah); // Reset urutan index
+    }
+
+    // Tambahkan fungsi ini di dalam class InputSetoran
+    public function editTransaction($id)
+    {
+        $transaction = Transaction::with(['details.category', 'incentives', 'user'])->find($id);
+
+        $this->editingTransactionId = $id;
+        $this->nasabahId = $transaction->user_id;
+        $this->namaNasabah = $transaction->user->name;
+
+        $this->selectedOfficers = $transaction->incentives->pluck('officer_id')->map(fn ($id) => (string)$id)->toArray();
+        $this->showAllOfficers = false;
+
+        $this->listSampah = [];
+        $this->searchCategory = []; // Reset search category
+
+        foreach ($transaction->details as $index => $detail) {
+            $is_gabrukan = ($detail->category && $detail->category->type === 'gabrukan') || is_null($detail->category_id);
+
+            $this->listSampah[] = [
+                'category_id' => $detail->category_id,
+                'weight' => $detail->weight,
+                'is_gabrukan' => $is_gabrukan
+            ];
+
+            // Isi searchCategory agar nama kategori muncul di input
+            $this->searchCategory[$index] = $detail->category ? $detail->category->name : '';
+        }
+
+        $this->dispatch('scroll-to-top');
+    }
+
+    public function hapusTransaksi($id)
+    {
+        Transaction::find($id)->delete();
+        session()->flash('message', 'Transaksi berhasil dihapus');
+    }
+
+    public function batalEdit()
+    {
+        // Reset ID edit agar sistem tahu ini bukan lagi mode update
+        $this->editingTransactionId = null;
+
+        // Bersihkan data nasabah dan sampah
+        $this->reset([
+            'nasabahId',
+            'namaNasabah',
+            'searchNasabah',
+            'listSampah',
+            'searchCategory'
+        ]);
+
+        // Kembalikan tampilan petugas ke mode pilih (opsional)
+        $this->showAllOfficers = true;
+
+        session()->flash('message', 'Edit dibatalkan.');
     }
 }
