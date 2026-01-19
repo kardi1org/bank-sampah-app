@@ -7,7 +7,7 @@
                     Menampilkan Riwayat:</p>
                 <h3 style="margin: 0; color: #1e293b; font-size: 16px;">{{ $targetUser->name }}</h3>
             </div>
-            <a href="{{ route('petugas.riwayat-hari-ini') }}"
+            <a href="{{ auth()->user()->role == 'admin' ? route('admin.riwayat-hari-ini') : route('petugas.riwayat-hari-ini') }}"
                 style="text-decoration: none; background: white; color: #4338ca; padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: bold; border: 1px solid #4338ca; transition: 0.3s;">
                 LIHAT SEMUA HARI INI
             </a>

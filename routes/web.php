@@ -53,14 +53,19 @@ Route::middleware(['auth'])->group(function () {
             return view('admin.dashboard');
         })->name('dashboard');
 
-        // Input Setoran (Admin bisa input juga)
+        // Input Setoran (Menggunakan view/wrapper yang sama dengan petugas)
         Route::get('/input-setoran', function () {
-            return view('admin.input-setoran'); // View khusus admin
+            return view('petugas.input-setoran');
         })->name('input-setoran');
+
+        // Riwayat Hari Ini
+        Route::get('/riwayat-hari-ini/{user_id?}', function ($user_id = null) {
+            return view('petugas.riwayat-hari-ini', ['user_id' => $user_id]);
+        })->name('riwayat-hari-ini');
 
         // Data Nasabah
         Route::get('/data-nasabah', function () {
-            return view('admin.data-nasabah');
+            return view('petugas.data-nasabah');
         })->name('data-nasabah');
 
         // Laporan Keuangan
@@ -69,13 +74,11 @@ Route::middleware(['auth'])->group(function () {
         })->name('laporan-keuangan');
 
         // Kategori Sampah
-        Route::get('/kategori-sampah', function () {
-            return view('admin.kategori-sampah');
-        })->name('kategori-sampah');
+        Route::get('/kategori-sampah', \App\Livewire\Admin\KategoriSampah::class)->name('kategori-sampah');
 
         // Transaksi History
         Route::get('/transaksi-history', function () {
-            return view('admin.transaksi-history');
+            return view('petugas.transaksi-history');
         })->name('transaksi-history');
 
         // Kelola Petugas

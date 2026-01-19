@@ -20,8 +20,15 @@ class DataNasabahTable extends Component
     // Fungsi untuk mengarahkan ke halaman riwayat setoran nasabah tertentu
     public function lihatTransaksi($userId)
     {
-        // Tambahkan prefix 'petugas.' agar sesuai dengan web.php
-        return redirect()->route('petugas.riwayat-hari-ini', ['user_id' => $userId]);
+        // Cek role user yang sedang login
+        $role = auth()->user()->role;
+
+        // Redirect sesuai prefix role masing-masing
+        if ($role === 'admin') {
+            return redirect()->route('admin.riwayat-hari-ini', ['user_id' => $userId]);
+        } else {
+            return redirect()->route('petugas.riwayat-hari-ini', ['user_id' => $userId]);
+        }
     }
 
     public function render()

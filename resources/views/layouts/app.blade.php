@@ -707,6 +707,9 @@
                             request()->routeIs('admin.input-setoran') || request()->routeIs('petugas.input-setoran');
                         $isDataNasabah =
                             request()->routeIs('admin.data-nasabah') || request()->routeIs('petugas.data-nasabah');
+                        $isRiwayat =
+                            request()->routeIs('admin.riwayat-hari-ini') ||
+                            request()->routeIs('petugas.riwayat-hari-ini');
                     @endphp
 
                     <a href="{{ Auth::user()->role == 'admin' ? route('admin.input-setoran') : route('petugas.input-setoran') }}"
@@ -720,6 +723,12 @@
                         <i class="fas fa-users"></i>
                         <span class="sidebar-text">Data Nasabah</span>
                     </a>
+
+                    <a href="{{ Auth::user()->role == 'admin' ? route('admin.riwayat-hari-ini') : route('petugas.riwayat-hari-ini') }}"
+                        class="menu-item {{ $isRiwayat ? 'active' : '' }}">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span class="sidebar-text">Riwayat Hari Ini</span>
+                    </a>
                 @endif
 
                 <!-- Menu khusus Admin -->
@@ -728,12 +737,6 @@
                         class="menu-item {{ request()->routeIs('admin.laporan-keuangan') ? 'active' : '' }}">
                         <i class="fas fa-file-invoice-dollar"></i>
                         <span class="sidebar-text">Laporan Keuangan</span>
-                    </a>
-
-                    <a href="{{ route('admin.transaksi-history') }}"
-                        class="menu-item {{ request()->routeIs('admin.transaksi-history') ? 'active' : '' }}">
-                        <i class="fas fa-history"></i>
-                        <span class="sidebar-text">Riwayat Transaksi</span>
                     </a>
 
                     <a href="{{ route('admin.kategori-sampah') }}"
@@ -746,15 +749,6 @@
                         class="menu-item {{ request()->routeIs('admin.petugas-management') ? 'active' : '' }}">
                         <i class="fas fa-user-tie"></i>
                         <span class="sidebar-text">Kelola Petugas</span>
-                    </a>
-                @endif
-
-                <!-- Menu khusus Petugas -->
-                @if (Auth::user()->role == 'petugas')
-                    <a href="{{ route('petugas.riwayat-hari-ini') }}"
-                        class="menu-item {{ request()->routeIs('petugas.riwayat-hari-ini') ? 'active' : '' }}">
-                        <i class="fas fa-clock-rotate-left"></i>
-                        <span class="sidebar-text">Riwayat Hari Ini</span>
                     </a>
                 @endif
 
