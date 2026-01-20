@@ -1,4 +1,5 @@
-<div class="container-fluid" style="padding: 20px; background: #f8fafc; min-height: 100vh;">
+{{-- <div class="container-fluid" style="padding: 20px; background: #f8fafc; min-height: 100vh;"> --}}
+<div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
             <h2
@@ -17,7 +18,7 @@
     @endif
 
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4 mb-4">
             <div
                 style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
                 <h4 style="font-size: 18px; font-weight: 600; color: #334155; margin-bottom: 20px;">
@@ -104,6 +105,16 @@
         <div class="col-md-8">
             <div
                 style="background: white; border-radius: 15px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                <div style="padding: 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                    <div style="position: relative;">
+                        <span style="position: absolute; left: 12px; top: 11px; color: #94a3b8;">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" wire:model.live.debounce.300ms="search"
+                            placeholder="Cari kategori sampah..."
+                            style="width: 100%; padding: 8px 12px 8px 35px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 14px;">
+                    </div>
+                </div>
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
                         <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
@@ -175,6 +186,75 @@
                         @endforelse
                     </tbody>
                 </table>
+                <div
+                    style="
+                                padding: 15px;
+                                background: white;
+                                border-top: 1px solid #f1f5f9;
+                                display: flex;
+                                flex-wrap: wrap;
+                                align-items: center;
+                                justify-content: center; /* Membuat semua konten ke tengah di mobile */
+                                gap: 15px;
+                            ">
+                    {{-- Bagian Kiri: Info (Hanya muncul di Desktop/Layar Lebar) --}}
+                    <style>
+                        .pagination-info {
+                            display: block;
+                            flex-grow: 1;
+                            color: #64748b;
+                            font-size: 13px;
+                        }
+
+                        @media (max-width: 640px) {
+                            .pagination-info {
+                                display: none;
+                            }
+
+                            /* Sembunyikan info teks di mobile agar fokus ke tombol */
+                        }
+                    </style>
+
+                    <div class="pagination-info">
+                        Menampilkan <b>{{ $categories->firstItem() ?? 0 }}</b> -
+                        <b>{{ $categories->lastItem() ?? 0 }}</b> dari <b>{{ $categories->total() }}</b>
+                    </div>
+
+                    {{-- Bagian Tengah/Kanan: Navigasi Utama --}}
+                    <div style="display: flex; gap: 10px; align-items: center; justify-content: center;">
+                        {{-- Tombol Previous --}}
+                        <button type="button" wire:click="previousPage"
+                            {{ $categories->onFirstPage() ? 'disabled' : '' }}
+                            style="padding: 8px 16px; border-radius: 10px; border: 1px solid {{ $categories->onFirstPage() ? '#e2e8f0' : '#cbd5e1' }}; background: {{ $categories->onFirstPage() ? '#f8fafc' : 'white' }}; color: {{ $categories->onFirstPage() ? '#94a3b8' : '#475569' }}; cursor: {{ $categories->onFirstPage() ? 'not-allowed' : 'pointer' }}; font-size: 14px; font-weight: 600;">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
+                        {{-- Nomor Halaman --}}
+                        <div
+                            style="
+                                    min-width: 40px;
+                                    height: 40px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 14px;
+                                    font-weight: 800;
+                                    color: #4338ca;
+                                    background: #f0f2ff;
+                                    border-radius: 10px;
+                                    border: 1px solid #e0e7ff;
+                                ">
+                            {{ $categories->currentPage() }}
+                        </div>
+
+                        {{-- Tombol Next --}}
+                        <button type="button" wire:click="nextPage"
+                            {{ !$categories->hasMorePages() ? 'disabled' : '' }}
+                            style="padding: 8px 16px; border-radius: 10px; border: 1px solid {{ !$categories->hasMorePages() ? '#e2e8f0' : '#cbd5e1' }}; background: {{ !$categories->hasMorePages() ? '#f8fafc' : 'white' }}; color: {{ !$categories->hasMorePages() ? '#94a3b8' : '#475569' }}; cursor: {{ !$categories->hasMorePages() ? 'not-allowed' : 'pointer' }}; font-size: 14px; font-weight: 600;">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

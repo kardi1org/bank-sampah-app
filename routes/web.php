@@ -4,6 +4,7 @@ use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\ProfileController;
+use App\Livewire\Admin\ManageUser;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +86,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/petugas-management', function () {
             return view('admin.petugas-management');
         })->name('petugas-management');
+
+        Route::get('/manage-users', ManageUser::class)->name('users.index');
     });
 
     // ========== RUTE KHUSUS PETUGAS ==========

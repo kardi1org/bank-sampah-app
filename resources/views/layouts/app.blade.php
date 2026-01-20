@@ -592,6 +592,9 @@
                             request()->routeIs('admin.input-setoran') || request()->routeIs('petugas.input-setoran');
                         $isDataNasabah =
                             request()->routeIs('admin.data-nasabah') || request()->routeIs('petugas.data-nasabah');
+                        $isRiwayat =
+                            request()->routeIs('admin.riwayat-hari-ini') ||
+                            request()->routeIs('petugas.riwayat-hari-ini');
                     @endphp
 
                     <a href="{{ Auth::user()->role == 'admin' ? route('admin.input-setoran') : route('petugas.input-setoran') }}"
@@ -605,6 +608,12 @@
                         <i class="fas fa-users"></i>
                         <span class="sidebar-text">Data Nasabah</span>
                     </a>
+
+                    <a href="{{ Auth::user()->role == 'admin' ? route('admin.riwayat-hari-ini') : route('petugas.riwayat-hari-ini') }}"
+                        class="menu-item {{ $isRiwayat ? 'active' : '' }}">
+                        <i class="fas fa-history"></i>
+                        <span class="sidebar-text">Riwayat Hari Ini</span>
+                    </a>
                 @endif
 
                 <!-- Menu khusus Admin -->
@@ -615,22 +624,16 @@
                         <span class="sidebar-text">Laporan Keuangan</span>
                     </a>
 
-                    <a href="{{ route('admin.transaksi-history') }}"
-                        class="menu-item {{ request()->routeIs('admin.transaksi-history') ? 'active' : '' }}">
-                        <i class="fas fa-history"></i>
-                        <span class="sidebar-text">Riwayat Transaksi</span>
-                    </a>
-
                     <a href="{{ route('admin.kategori-sampah') }}"
                         class="menu-item {{ request()->routeIs('admin.kategori-sampah') ? 'active' : '' }}">
                         <i class="fas fa-trash"></i>
                         <span class="sidebar-text">Kategori Sampah</span>
                     </a>
 
-                    <a href="{{ route('admin.petugas-management') }}"
-                        class="menu-item {{ request()->routeIs('admin.petugas-management') ? 'active' : '' }}">
+                    <a href="{{ route('admin.users.index') }}"
+                        class="menu-item {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                         <i class="fas fa-user-tie"></i>
-                        <span class="sidebar-text">Kelola Petugas</span>
+                        <span class="sidebar-text">Kelola Pengguna</span>
                     </a>
                 @endif
 
@@ -745,10 +748,10 @@
                         <span class="sidebar-text">Kategori Sampah</span>
                     </a>
 
-                    <a href="{{ route('admin.petugas-management') }}"
-                        class="menu-item {{ request()->routeIs('admin.petugas-management') ? 'active' : '' }}">
+                    <a href="{{ route('admin.users.index') }}"
+                        class="menu-item {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                         <i class="fas fa-user-tie"></i>
-                        <span class="sidebar-text">Kelola Petugas</span>
+                        <span class="sidebar-text">Kelola Pengguna</span>
                     </a>
                 @endif
 

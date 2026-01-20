@@ -4,22 +4,35 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use App\Models\Category;
+use Livewire\WithPagination; // Wajib untuk pagination
 use Livewire\Attributes\Locked;
 
 class KategoriSampah extends Component
 {
-    // Properti Form
+    use WithPagination; // Gunakan trait ini
+
+    // Gunakan tema pagination Bootstrap agar tampilannya rapi
+    protected $paginationTheme = 'bootstrap';
+
     #[Locked]
     public $categoryId;
+
     public $name;
     public $price_type = 'percentage';
     public $nasabah_percentage = 80;
     public $price_fix = 0;
     public $type = 'pilah';
-
     public $isEdit = false;
 
-    // Reset form ke awal
+    // Properti untuk pencarian
+    public $search = '';
+
+    // Reset halaman ke 1 setiap kali user mengetik pencarian
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
     public function resetInput()
     {
         $this->reset(['name', 'categoryId', 'isEdit', 'price_fix', 'type']);
@@ -111,8 +124,14 @@ class KategoriSampah extends Component
 
     public function render()
     {
+        // Logika Query dengan Pencarian
+        $categories = Category::query()
+            ->where('name', 'like', '%' . $this->search . '%')
+            ->orderBy('id', 'desc')
+            ->paginate(5); // Menampilkan 10 data per halaman
+
         return view('livewire.admin.kategori-sampah', [
-            'categories' => Category::orderBy('id', 'desc')->get()
+            'categories' => $categories
         ])->layout('layouts.app');
     }
 }
