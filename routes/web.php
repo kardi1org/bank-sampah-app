@@ -47,6 +47,10 @@ Route::middleware(['auth'])->group(function () {
         }
     })->name('dashboard');
 
+    Route::group(['middleware' => ['auth', 'role:admin,petugas']], function () {
+        Route::get('/penjualan', \App\Livewire\Admin\ManageSale::class)->name('penjualan.index');
+    });
+
     // ========== RUTE KHUSUS ADMIN ==========
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         // Dashboard Admin

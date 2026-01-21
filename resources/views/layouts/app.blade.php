@@ -614,6 +614,11 @@
                         <i class="fas fa-history"></i>
                         <span class="sidebar-text">Riwayat Hari Ini</span>
                     </a>
+                    <a href="{{ route('penjualan.index') }}"
+                        class="menu-item {{ request()->routeIs('penjualan.index') ? 'active' : '' }}">
+                        <i class="fas fa-recycle"></i>
+                        <span class="sidebar-text">Penjualan Sampah</span>
+                    </a>
                 @endif
 
                 <!-- Menu khusus Admin -->
@@ -634,15 +639,6 @@
                         class="menu-item {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                         <i class="fas fa-user-tie"></i>
                         <span class="sidebar-text">Kelola Pengguna</span>
-                    </a>
-                @endif
-
-                <!-- Menu khusus Petugas -->
-                @if (Auth::user()->role == 'petugas')
-                    <a href="{{ route('petugas.riwayat-hari-ini') }}"
-                        class="menu-item {{ request()->routeIs('petugas.riwayat-hari-ini') ? 'active' : '' }}">
-                        <i class="fas fa-clock-rotate-left"></i>
-                        <span class="sidebar-text">Riwayat Hari Ini</span>
                     </a>
                 @endif
 
@@ -731,6 +727,11 @@
                         class="menu-item {{ $isRiwayat ? 'active' : '' }}">
                         <i class="fas fa-clock-rotate-left"></i>
                         <span class="sidebar-text">Riwayat Hari Ini</span>
+                    </a>
+                    <a href="{{ route('penjualan.index') }}" {{-- class="menu-item {{ $isSales ? 'active' : '' }}"> --}}
+                        class="menu-item {{ request()->routeIs('penjualan.index') ? 'active' : '' }}">
+                        <i class="fas fa-recycle"></i>
+                        <span class="sidebar-text">Penjualan Sampah</span>
                     </a>
                 @endif
 

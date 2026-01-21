@@ -6,11 +6,11 @@
                     {{ $isEdit ? 'Update Pengguna' : 'Tambah Pengguna' }}
                 </h5>
 
-                <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}"
+                <form wire:submit.prevent="{{ $isEdit ? 'update' : 'store' }}" wire:key="form-sale-{{ $formKey }}"
                     wire:key="form-user-{{ $userId ?? 'new' }}">
-                    @if ($isEdit)
+                    {{-- @if ($isEdit)
                         <input type="hidden" wire:model="userId">
-                    @endif
+                    @endif --}}
                     <div style="margin-bottom: 15px;">
                         <label
                             style="display: block; font-weight: 600; color: #64748b; margin-bottom: 8px; font-size: 14px;">Nama
@@ -20,7 +20,7 @@
                             style="width: 100%;border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px; font-size: 14px;"
                             placeholder="Masukkan nama lengkap...">
                         @error('name')
-                            <small class="text-danger" style="font-size: 11px;">{{ $message }}</small>
+                            <span style="color: #ef4444; font-size: 11px;">{{ $message }}</span>
                         @enderror
                     </div>
 
@@ -33,7 +33,7 @@
                             style="width: 100%;border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px; font-size: 14px;"
                             placeholder="email@contoh.com">
                         @error('email')
-                            <small class="text-danger" style="font-size: 11px;">{{ $message }}</small>
+                            <span style="color: #ef4444; font-size: 11px;">{{ $message }}</span>
                         @enderror
                     </div>
 
@@ -60,7 +60,7 @@
                             style="width: 100%;border-radius: 8px; border: 1px solid #cbd5e1; padding: 10px; font-size: 14px;"
                             placeholder="••••••••">
                         @error('password')
-                            <small class="text-danger" style="font-size: 11px;">{{ $message }}</small>
+                            <span style="color: #ef4444; font-size: 11px;">{{ $message }}</span>
                         @enderror
                     </div>
 

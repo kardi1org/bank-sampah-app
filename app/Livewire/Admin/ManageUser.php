@@ -21,7 +21,12 @@ class ManageUser extends Component
     // State Control
     public $isEdit = false;
     public $search = '';
+    public $formKey; // Tambahkan properti ini
 
+    public function mount()
+    {
+        $this->formKey = rand(); // Beri nilai awal
+    }
 
     public function store()
     {
@@ -53,7 +58,7 @@ class ManageUser extends Component
         $this->email = $user->email;
         $this->role = $user->role;
         $this->isEdit = true;
-
+        $this->formKey = 'edit-' . $id;
         $this->dispatch('scroll-to-top');
     }
 
@@ -113,5 +118,6 @@ class ManageUser extends Component
         $this->reset(['name', 'email', 'password', 'userId', 'isEdit']);
         $this->role = 'nasabah';
         $this->resetValidation(); // Menghapus pesan error merah jika ada
+        $this->formKey = rand();
     }
 }
