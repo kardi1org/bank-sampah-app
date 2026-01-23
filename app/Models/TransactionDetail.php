@@ -12,10 +12,21 @@ class TransactionDetail extends Model
         'category_id',
         'weight',
         'price_to_nasabah',
+        'status',
+        'sale_id',
+        'sold_at',
+        'weight_at_sale'
     ];
 
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    // app/Models/TransactionDetail.php
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class, 'transaction_id');
     }
 }

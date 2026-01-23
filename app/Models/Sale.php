@@ -12,6 +12,13 @@ class Sale extends Model
         'sale_date',
         'total_weight',
         'total_price',
-        'note'
+        'note',
+        'category_id',
+        'price_per_kg'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
 }
