@@ -226,46 +226,59 @@
                                         @if (!$item['is_gabrukan'])
                                             <input type="text" x-model="searchTerm"
                                                 wire:model.live.debounce.300ms="searchCategory.{{ $index }}"
-                                                placeholder="Pilih Kategori Sampah..." class="input-field"
-                                                style="border: 2px solid @error('listSampah.' . $index . '.category_id') #ef4444 @else {{ $item['category_id'] ? '#4338ca' : '#cbd5e1' }} @enderror;
-                                               background: {{ $item['category_id'] ? '#f0f4ff' : 'white' }};"
+                                                placeholder="Cari Kategori..." class="input-field"
+                                                style="background: {{ $item['category_id'] ? '#f0f4ff' : 'white' }}; border-color: {{ $item['category_id'] ? '#4338ca' : '#cbd5e1' }};"
                                                 {{ $item['category_id'] ? 'readonly' : '' }}>
 
                                             @if (isset($categoryResults[$index]) && $categoryResults[$index]->count() > 0 && !$item['category_id'])
                                                 <div
                                                     style="position: absolute; width: 100%; background: white; border: 2px solid #4338ca; border-radius: 8px; margin-top: 5px; max-height: 180px; overflow-y: auto; box-shadow: 0 10px 15px rgba(0,0,0,0.1); z-index: 9999;">
                                                     @foreach ($categoryResults[$index] as $cat)
-                                                        <div wire:click="selectCategory({{ $index }}, {{ $cat->id }}, '{{ $cat->name }}')"
-                                                            @click="searchTerm = '{{ $cat->name }}'"
-                                                            style="padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; color: black; font-weight: bold; font-size: 13px;"
-                                                            onmouseover="this.style.backgroundColor='#e0e7ff'"
-                                                            onmouseout="this.style.backgroundColor='white'">
-                                                            📦 {{ $cat->name }}
+                                                        <div {{-- Tambahkan x-on:click agar Alpine tau nilai input berubah --}}
+                                                            x-on:click="searchTerm = '{{ $cat->name }}'"
+                                                            wire:click="selectCategory({{ $index }}, {{ $cat->id }}, '{{ $cat->name }}', '{{ $cat->unit }}')"
+                                                            style="padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; color: black; font-weight: bold; font-size: 13px;">
+                                                            <div
+                                                                style="display: flex; justify-content: space-between; align-items: center;">
+                                                                <span>📦 {{ $cat->name }}</span>
+                                                                <span
+                                                                    style="color: #64748b; font-size: 10px; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">
+                                                                    {{ $cat->unit }}
+                                                                </span>
+                                                            </div>
                                                         </div>
                                                     @endforeach
                                                 </div>
                                             @endif
+
+                                            {{-- Tombol Reset jika salah pilih --}}
+                                            @if ($item['category_id'])
+                                                <button type="button" wire:click="resetCategory({{ $index }})"
+                                                    style="position: absolute; right: 10px; top: 10px; border: none; background: transparent; color: #ef4444; cursor: pointer;">
+                                                    ✕
+                                                </button>
+                                            @endif
                                         @else
                                             <div
                                                 style="color: #d97706; font-weight: 800; font-size: 13px; padding: 10px; background: #fffbeb; border: 2px solid #fcd34d; border-radius: 8px;">
-                                                🚚 GABRUKAN
-                                            </div>
+                                                🚚 GABRUKAN (Kg) < 1000 </div>
                                         @endif
                                     </div>
 
-                                    <div class="kg-box">
+                                    <div style="flex: 0 0 140px; display: flex; align-items: center; gap: 8px;">
                                         <input type="number" wire:model.live="listSampah.{{ $index }}.weight"
-                                            step="0.01" class="input-field"
-                                            style="border: 2px solid @error('listSampah.' . $index . '.weight') #ef4444 @else #cbd5e1 @enderror; text-align: center;"
+                                            step="0.01" class="input-field" style="text-align: center; flex: 1;"
                                             placeholder="0">
-                                        <span style="font-weight: 900; color: #475569; font-size: 13px;">Kg</span>
+
+                                        <span
+                                            style="font-weight: 900; color: #4338ca; font-size: 12px; min-width: 35px; text-transform: uppercase;">
+                                            {{ $item['unit'] ?? 'Kg' }}
+                                        </span>
                                     </div>
 
                                     <div class="action-box">
                                         <button wire:click="hapusBaris({{ $index }})"
-                                            style="background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s;"
-                                            onmouseover="this.style.background='#fee2e2'"
-                                            onmouseout="this.style.background='#fef2f2'">
+                                            style="background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; width: 38px; height: 38px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -383,8 +396,9 @@
                                 <td style="padding: 12px;">
                                     @foreach ($trx->details as $detail)
                                         <span
-                                            style="background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block;">
-                                            {{ $detail->category->name ?? 'Gab' }}: {{ $detail->weight }}kg
+                                            style="background: #eef2ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; display: inline-block; margin-bottom: 2px;">
+                                            {{ $detail->category->name ?? 'Gabrukan' }}: {{ $detail->weight }}
+                                            {{ $detail->unit ?? ($detail->category->unit ?? 'kg') }}
                                         </span>
                                     @endforeach
                                 </td>
@@ -403,7 +417,9 @@
                                 <td style="padding: 12px; text-align: center;">
                                     <div style="display: flex; gap: 8px; justify-content: center;">
                                         <button wire:click="editTransaction({{ $trx->id }})"
-                                            style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer;">✏️</button>
+                                            @if ($editingTransactionId) disabled @endif
+                                            style="padding: 6px 12px; border-radius: 6px; border: none; font-weight: bold; cursor: {{ $editingTransactionId ? 'not-allowed' : 'pointer' }};
+                                            background-color: {{ $editingTransactionId ? '#cbd5e1' : '#4338ca' }}; color: white; transition: all 0.3s;">✏️</button>
                                         <button
                                             onclick="confirm('Yakin ingin menghapus transaksi ini?') || event.stopImmediatePropagation()"
                                             wire:click="hapusTransaksi({{ $trx->id }})"

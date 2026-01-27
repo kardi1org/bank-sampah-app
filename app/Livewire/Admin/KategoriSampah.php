@@ -23,6 +23,7 @@ class KategoriSampah extends Component
     public $price_fix = 0;
     public $type = 'pilah';
     public $isEdit = false;
+    public $unit = 'kg';
 
     // Properti untuk pencarian
     public $search = '';
@@ -37,6 +38,7 @@ class KategoriSampah extends Component
     {
         $this->reset(['name', 'categoryId', 'isEdit', 'price_fix', 'type']);
         $this->price_type = 'percentage';
+        $this->unit = 'kg';
         $this->nasabah_percentage = 80;
         $this->resetValidation();
     }
@@ -46,6 +48,7 @@ class KategoriSampah extends Component
     {
         $this->validate([
             'name' => 'required|min:3',
+            'unit' => 'required|in:kg,ltr,pcs',
             'price_type' => 'required',
             'type' => 'required',
             'price_fix' => $this->price_type == 'fix' ? 'required|numeric' : 'nullable',
@@ -54,6 +57,7 @@ class KategoriSampah extends Component
 
         Category::create([
             'name' => $this->name,
+            'unit' => $this->unit,
             'price_type' => $this->price_type,
             'price_fix' => $this->price_type == 'fix' ? $this->price_fix : 0,
             'nasabah_percentage' => $this->price_type == 'percentage' ? $this->nasabah_percentage : 0,
@@ -79,6 +83,7 @@ class KategoriSampah extends Component
         // Pastikan mengisi ke property yang tepat
         $this->categoryId = $category->id;
         $this->name = $category->name;
+        $this->unit = $category->unit;
         $this->price_type = $category->price_type;
         $this->nasabah_percentage = $category->nasabah_percentage;
         $this->price_fix = $category->price_fix;
@@ -96,6 +101,7 @@ class KategoriSampah extends Component
 
         $this->validate([
             'name' => 'required|min:3',
+            'unit' => 'required|in:kg,ltr,pcs',
             'price_type' => 'required',
         ]);
 
@@ -105,6 +111,7 @@ class KategoriSampah extends Component
             // Gunakan update dengan array untuk memastikan Laravel Eloquent bekerja
             $category->update([
                 'name'               => $this->name,
+                'unit'               => $this->unit,
                 'price_type'         => $this->price_type,
                 'type'               => $this->type ?? 'pilah',
                 'price_fix'          => ($this->price_type == 'fix') ? $this->price_fix : 0,
@@ -128,7 +135,7 @@ class KategoriSampah extends Component
         $categories = Category::query()
             ->where('name', 'like', '%' . $this->search . '%')
             ->orderBy('id', 'desc')
-            ->paginate(5); // Menampilkan 10 data per halaman
+            ->paginate(10); // Menampilkan 10 data per halaman
 
         return view('livewire.admin.kategori-sampah', [
             'categories' => $categories

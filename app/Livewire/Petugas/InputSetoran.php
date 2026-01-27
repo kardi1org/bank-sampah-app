@@ -36,9 +36,10 @@ class InputSetoran extends Component
         // Opsional: $this->selectedOfficers = []; // Hapus pilihan lama jika ingin benar-benar reset
     }
 
-    public function selectCategory($index, $categoryId, $categoryName)
+    public function selectCategory($index, $categoryId, $categoryName, $unit)
     {
         $this->listSampah[$index]['category_id'] = $categoryId;
+        $this->listSampah[$index]['unit'] = $unit; // Simpan unit dari master ke sini
         $this->searchCategory[$index] = $categoryName;
     }
 
@@ -78,13 +79,14 @@ class InputSetoran extends Component
         $this->listSampah[] = [
             'category_id' => '',
             'weight' => '',
+            'unit' => ($type === 'gabrukan' ? 'Kg' : ''), // Tambahkan key unit
             'is_gabrukan' => ($type === 'gabrukan')
         ];
 
-        // Inisialisasi search string untuk baris baru
         $index = count($this->listSampah) - 1;
         $this->searchCategory[$index] = '';
     }
+
     public function simpan()
     {
         $this->validate([
@@ -221,6 +223,7 @@ class InputSetoran extends Component
             $this->listSampah[] = [
                 'category_id' => $detail->category_id,
                 'weight' => $detail->weight,
+                'unit' => $detail->category->unit ?? 'Kg',
                 'is_gabrukan' => $is_gabrukan
             ];
 
@@ -233,8 +236,22 @@ class InputSetoran extends Component
 
     public function hapusTransaksi($id)
     {
-        Transaction::find($id)->delete();
-        session()->flash('message', 'Transaksi berhasil dihapus');
+        DB::transaction(function () use ($id) {
+            $transaction = Transaction::find($id);
+
+            if ($transaction) {
+                // Hapus detail sampah terlebih dahulu
+                $transaction->details()->delete();
+
+                // Hapus insentif petugas terkait
+                $transaction->incentives()->delete();
+
+                // Baru hapus transaksi utamanya
+                $transaction->delete();
+            }
+        });
+
+        session()->flash('message', 'Transaksi dan detailnya berhasil dihapus');
     }
 
     public function batalEdit()

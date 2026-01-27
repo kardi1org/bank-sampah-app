@@ -43,6 +43,22 @@
 
                     <div style="margin-bottom: 18px;">
                         <label
+                            style="display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">
+                            Satuan
+                        </label>
+                        <select wire:model="unit"
+                            style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff;">
+                            <option value="kg">Kilogram (kg)</option>
+                            <option value="ltr">Liter (ltr)</option>
+                            <option value="pcs">Pcs / Biji (pcs)</option>
+                        </select>
+                        @error('unit')
+                            <span style="color: #ef4444; font-size: 11px;">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label
                             style="display: block; font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">Tipe
                             Perhitungan Harga</label>
                         <select wire:model.live="price_type" wire:key="select-price-{{ $categoryId ?? 'new' }}"
@@ -73,7 +89,7 @@
                             style="margin-bottom: 18px; background: #f0fdf4; padding: 15px; border-radius: 10px; border: 1px solid #dcfce7;">
                             <label
                                 style="display: block; font-size: 13px; font-weight: 600; color: #166534; margin-bottom: 8px;">Harga
-                                Tetap (Rp/Kg)</label>
+                                Tetap (Rp/Satuan)</label>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <span style="font-weight: bold; color: #166534;">Rp</span>
                                 <input type="number" wire:model="price_fix" class="form-control"
@@ -120,6 +136,7 @@
                         <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
                             <th style="padding: 15px; font-size: 13px; color: #475569; font-weight: 700;">NAMA KATEGORI
                             </th>
+                            <th style="padding: 15px; font-size: 13px; color: #475569; font-weight: 700;">SATUAN</th>
                             <th style="padding: 15px; font-size: 13px; color: #475569; font-weight: 700;">SKEMA HARGA
                             </th>
                             <th style="padding: 15px; font-size: 13px; color: #475569; font-weight: 700;">NILAI</th>
@@ -137,7 +154,12 @@
                                 onmouseout="this.style.background='transparent'">
 
                                 <td style="padding: 15px; font-weight: 600; color: #1e293b;">{{ $category->name }}</td>
-
+                                <td style="padding: 15px;">
+                                    <span
+                                        style="background: #f1f5f9; color: #475569; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+                                        {{ $category->unit ?? 'kg' }}
+                                    </span>
+                                </td>
                                 <td style="padding: 15px;">
                                     @if ($category->price_type == 'percentage')
                                         <span
